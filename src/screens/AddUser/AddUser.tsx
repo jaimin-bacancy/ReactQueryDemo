@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NavigationProp, useNavigation } from '@react-navigation/core';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -12,6 +12,7 @@ import {
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { createUser } from '../../api/user';
 import { CustomTextInput } from '../../components/CustomTextInput/CustomTextInput';
+import { UserResponse } from '../../models';
 import styles from './AddUser.styles';
 
 function goBack(navigation: NavigationProp<ReactNavigation.RootParamList>) {
@@ -23,15 +24,25 @@ function AddUserForm(): JSX.Element {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const queryClient = useQueryClient();
 
   const { isLoading, mutate, failureCount, failureReason } = useMutation({
     mutationFn: createUser,
-    retry: 5,
-    retryDelay: 1000,
     onSuccess: (data, variables, context) => {
       Alert.alert('User created successfully', '', [
         {
-          onPress: () => goBack(navigation),
+          onPress: () => {
+            const prevData: UserResponse | undefined = queryClient.getQueryData(
+              ['users'],
+            );
+
+            queryClient.setQueryData(['users'], {
+              ...prevData,
+              users: [data, ...(prevData?.users ?? [])],
+            });
+
+            goBack(navigation);
+          },
         },
       ]);
     },
