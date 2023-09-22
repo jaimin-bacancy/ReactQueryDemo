@@ -13,6 +13,8 @@ import {
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { fetchUsers } from '../../api/user';
 import { UserItem } from '../../components/UserItem/UserItem';
+import { useOnLeave } from '../../hooks/useOnLeave';
+import { UsersData } from '../../mocks/users';
 import { User } from '../../models';
 import { RootStackParamList } from '../../navigators';
 import styles from './Users.styles';
@@ -22,9 +24,14 @@ function UsersList(): JSX.Element {
     useQuery({
       queryKey: ['users'],
       queryFn: () => fetchUsers(20, 0),
+      placeholderData: UsersData,
+      retry: 5,
+      retryDelay: 1000,
     });
 
   console.log('failureCount', failureCount, failureReason);
+
+  useOnLeave(['users']);
 
   return (
     <FlatList

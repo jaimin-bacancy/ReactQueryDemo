@@ -44,6 +44,7 @@ export function UserDetails({}): JSX.Element {
   const teamsQuery = useQuery({
     queryKey: ['posts', userId],
     queryFn: () => fetchPostsByUser(userId),
+    enabled: usersQuery.data.id !== undefined,
   });
 
   return (
